@@ -93,6 +93,9 @@ The 10 most common commands. For the full catalog (~40 commands), see
 | `planr backlog prioritize --yes` | AI-powered backlog prioritization by impact/effort |
 | `planr spec init` | Activate **spec-driven mode** — the third planning posture for AI-agent execution |
 | `planr spec create "<title>" --slug <slug>` | Create a self-contained `.planr/specs/SPEC-NNN-{slug}/` with stories/, tasks/, design/ subdirs |
+| `planr spec shape <SPEC-id>` | Interactive 4-question spec authoring (Context, Functional Reqs, Business Rules, Acceptance) |
+| `planr spec decompose <SPEC-id>` | AI-driven generation of User Stories + Tasks; matches openplanr-pipeline schema |
+| `planr spec sync [<SPEC-id>] --dry-run` | Validate spec integrity (orphans, missing specId, schema drift); auto-fixes safe issues |
 | `planr spec promote <SPEC-id>` | Validate decomposition + print `/openplanr-pipeline:plan {slug}` handoff |
 
 **Rule:** Every command that accepts `--yes` MUST receive it when invoked by an
@@ -216,14 +219,22 @@ planr spec create "Auth flow" --slug auth --priority P0 --milestone v1.0
 # 3. (Optional) Attach UI mockups for the pipeline's designer-agent
 planr spec attach-design SPEC-001 --files login.png signup.png
 
-# 4. Edit the spec body in $EDITOR (functional reqs, business rules, AC)
-#    Or use guided authoring (follow-up release):
-#    planr spec shape SPEC-001
-#    planr spec decompose SPEC-001  ← AI generates US + Tasks (follow-up release)
+# 4a. Author the spec body — pick one:
+#     EITHER guided authoring (interactive 4 questions):
+planr spec shape SPEC-001
+#     OR edit the spec markdown in your $EDITOR directly
+
+# 4b. Decompose into User Stories + Tasks (AI-driven)
+planr spec decompose SPEC-001
+#     Flags: --force (overwrite existing), --no-code-context (faster),
+#            --max-stories <n> (cap output)
 
 # 5. Review the decomposition
 planr spec show SPEC-001
 planr spec status
+
+# 5b. Validate integrity if needed (orphans, missing specId, schema drift)
+planr spec sync SPEC-001        # or `planr spec sync` for all specs
 
 # 6. Promote (validates completeness; prints pipeline handoff)
 planr spec promote SPEC-001
