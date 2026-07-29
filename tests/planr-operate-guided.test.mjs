@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const skill = readFileSync(join(root, 'skills', 'planr-operate', 'SKILL.md'), 'utf8');
+const ecosystemRoot = resolve(process.env.OPENPLANR_ECOSYSTEM_ROOT ?? join(root, '..'));
 
 const fixtures = [
   {
@@ -72,7 +73,15 @@ const fixtures = [
 
 test('the standalone skill remains byte-identical to the canonical generated Codex asset', () => {
   const canonical = readFileSync(
-    resolve(root, '..', 'planr-pipeline', 'adapters', 'codex', 'skills', 'planr-operate', 'SKILL.md'),
+    resolve(
+      ecosystemRoot,
+      'planr-pipeline',
+      'adapters',
+      'codex',
+      'skills',
+      'planr-operate',
+      'SKILL.md',
+    ),
     'utf8',
   );
   assert.equal(skill, canonical);
