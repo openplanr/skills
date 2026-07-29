@@ -2,6 +2,13 @@
 
 All notable changes to `openplanr-skills` are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.17.2] — 2026-07-30
+
+### Fixed
+
+- Use Node's built-in test discovery instead of a POSIX shell glob so the
+  standalone skill validation suite runs under PowerShell on Windows.
+
 ## [1.17.1] — 2026-07-30
 
 ### Fixed
