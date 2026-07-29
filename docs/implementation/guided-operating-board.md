@@ -1,6 +1,6 @@
 # OPERATE-SPEC-003 skills work item
 
-Umbrella specification: `SPEC-003`  
+Umbrella specification: `SPEC-003`
 Release participant: `@openplanr/skills@1.17.0`
 
 The public `planr-operate` skill is a thin presentation adapter generated from
