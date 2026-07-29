@@ -6,8 +6,9 @@ All notable changes to `openplanr-skills` are documented here. The format follow
 
 ### Fixed
 
-- Use Node's built-in test discovery instead of a POSIX shell glob so the
-  standalone skill validation suite runs under PowerShell on Windows.
+- Use an explicit Node test entrypoint instead of a POSIX shell glob so the
+  standalone suite runs under PowerShell and does not discover sibling
+  ecosystem-fixture tests.
 
 ## [1.17.1] — 2026-07-30
 

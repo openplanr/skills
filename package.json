@@ -7,6 +7,6 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node scripts/validate.mjs && node --test"
+    "test": "node scripts/validate.mjs && node --test tests/planr-operate-guided.test.mjs"
   }
 }
