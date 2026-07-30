@@ -74,6 +74,9 @@ if (existsSync(operateSkillPath)) {
     'Do not ask the user to paste or manually rerun',
     '`planr operate evidence diagnose …`',
     'Never trial-edit sources',
+    'rolePack.roleBrief.output.jsonSchema',
+    'operating-advisor-response@1.2.0',
+    'do not add\n`kind`, cycle, role, input-digest, producer, or result-digest metadata',
     'Never invoke SHIP',
     'Do not edit `.planr/operate`',
   ]) {

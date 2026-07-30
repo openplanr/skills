@@ -4,14 +4,15 @@
 - **Umbrella specification:** `openplanr/planr-pipeline` —
   `.planr/specs/SPEC-002-openplanr-operating-board/SPEC-002-openplanr-operating-board.md`
 - **Repository:** `openplanr/skills`
-- **Target:** `@openplanr/skills` 1.17.0
+- **Target:** `@openplanr/skills` 1.18.0
 
 ## Repository-only scope
 
 - Add the thin `planr-operate` workflow and register it with the standalone
   skill marketplace.
-- Present only CLI-returned questionnaires and typed actions, submit typed
-  answer envelopes through resumable sessions, and continue an explicitly
+- Present only CLI-returned questionnaires and typed actions, construct typed
+  answer envelopes from the questionnaire's `submission` contract through
+  resumable sessions, and continue an explicitly
   requested cycle through its bounded native advisor lifecycle without manual
   command handoffs.
 - Route evidence quarantine through value-free diagnose/classify commands;
@@ -22,6 +23,9 @@
   boundaries.
 - Present the brief and CEO/CTO/CPO/CMO/COO/Chair Markdown or JSON reports with
   the CLI's exact governed conversion actions. The dashboard remains optional.
+- Return exactly the compact advisor response described by each immutable role
+  pack. Never synthesize canonical result-wrapper metadata or digests in a
+  runtime adapter.
 - Update unified guidance, README inventory, release metadata, and changelog.
 - Validate portable naming, command boundaries, runtime-neutral content, and
   byte parity with the pipeline-generated Codex skill when that read-only
