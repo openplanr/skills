@@ -47,9 +47,21 @@ const fixtures = [
     },
     expected: 'diagnose',
   },
+  {
+    name: 'selected native cycle start',
+    result: {
+      ok: true,
+      actions: [{
+        id: 'operate.run.start',
+        effect: 'project-write',
+        requiresConfirmation: true,
+        confirmationDigest: `sha256:${'a'.repeat(64)}`,
+      }],
+    },
+    expected: 'continue-native-cycle',
+  },
   ...[
     'operate.init.apply',
-    'operate.run.start',
     'operate.provider.call',
     'operate.routes.apply',
     'operate.plan.handoff',
@@ -103,8 +115,13 @@ test('guided conversation fixtures preserve every stop boundary', () => {
       assert.match(skill, /Never trial-edit sources/);
     }
     if (fixture.result.actions?.some((action) => action.requiresConfirmation)) {
-      assert.match(skill, /Stop after each selected non-read-only action/);
-      assert.match(skill, /Never add `--yes`/);
+      if (fixture.expected === 'continue-native-cycle') {
+        assert.match(skill, /explicit request to \*\*run one Operating Board cycle\*\*/);
+        assert.match(skill, /Do not ask the user to paste or manually rerun/);
+      } else {
+        assert.match(skill, /Ask separately for external provider consent/);
+        assert.match(skill, /planning-artifact creation, PLAN, SHIP/);
+      }
     }
     assert.ok(fixture.expected, fixture.name);
   }
@@ -114,6 +131,6 @@ test('the skill contains no copied question/default logic or unsafe command rout
   assert.doesNotMatch(skill, /Who owns final operating decisions\?/);
   assert.doesNotMatch(skill, /Operating profile:/);
   assert.doesNotMatch(skill, /(?:^|\n)\s*(?:sed|perl|python|node)\s+.*\.planr\/operate/m);
-  assert.doesNotMatch(skill, /`planr operate[^`]*--yes[^`]*`/);
+  assert.doesNotMatch(skill, /(?:^|\n)\s*planr operate[^\n]*--yes/m);
   assert.doesNotMatch(skill, /(?:^|\n)\s*planr-pipeline\s+/m);
 });
