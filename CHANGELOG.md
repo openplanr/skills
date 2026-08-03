@@ -2,6 +2,31 @@
 
 All notable changes to `openplanr-skills` are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.25.0] — 2026-08-03
+
+### Added
+
+- `planr-doctor` now drives an OpenPlanr upgrade, not only diagnoses drift. When
+  the installed tuple has drifted, the skill runs the CLI's own upgrade flow,
+  executes the plugin-half commands the CLI prescribes — refreshing the plugin
+  marketplace first, so the installer cannot reinstall the cached, stale version
+  — then re-checks and reports the real before/after difference in installed
+  versions rather than an assumed one. The command list is read from the CLI's
+  output, never written into the skill, so it can never drift from what an
+  install would actually run. A new `references/upgrade.md` walkthrough documents
+  the output shape and the reporting format.
+
+### Changed
+
+- The plugin marketplace entry now declares `strict: true` and pins every skill
+  that ships today, including the planning skill, so the host loader reports no
+  conflicting-manifest error and no skill in a user's current bundle disappears
+  on upgrade. `scripts/validate.mjs` now models two skill classes — portable
+  workflow skills, held to the runtime-neutral leak check, and the shipped
+  planning skill, permitted to document per-runtime routing as its subject
+  matter — and fails if a new skill directory would auto-ship into neither class
+  unnoticed.
+
 ## [1.24.0] — 2026-08-02
 
 ### Changed
