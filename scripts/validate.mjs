@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,6 +11,12 @@ const pluginManifest = existsSync(pluginManifestPath)
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const names = new Set();
 const errors = [];
+// Two skill classes ship from this repository (FR2):
+//   - portable workflow skills, held to the runtime-neutral leak check below;
+//   - the planning skill, which is shipped but exempt from the leak check
+//     because documenting per-runtime routing is its subject matter, not a leak.
+// A skill directory must belong to exactly one class, or the suite fails — a new
+// directory can never auto-ship into either class unnoticed.
 const expectedPortableSkills = new Set([
   'openplanr-unified',
   'planr-artifact',
@@ -22,6 +28,8 @@ const expectedPortableSkills = new Set([
   'planr-doctor',
   'planr-operate',
 ]);
+const expectedShippedSkills = new Set(['openplanr']);
+const declaredSkills = new Set([...expectedPortableSkills, ...expectedShippedSkills]);
 const operateSkillPath = join(root, 'skills', 'planr-operate', 'SKILL.md');
 
 if (packageJson.version !== marketplace.metadata?.version) {
@@ -107,20 +115,53 @@ for (const plugin of marketplace.plugins ?? []) {
     if (!name) errors.push(`${relative} has no frontmatter name`);
     else if (names.has(name)) errors.push(`Duplicate skill name: ${name}`);
     else names.add(name);
-    if (/CLAUDE_PLUGIN_ROOT|Sonnet|Opus|persona role-shift/.test(text)) {
+    // The leak check applies to portable workflow skills only. The planning
+    // skill is exempt: it is permitted to describe per-runtime routing, which is
+    // exactly the content this regex would otherwise flag.
+    if (
+      !(name && expectedShippedSkills.has(name)) &&
+      /CLAUDE_PLUGIN_ROOT|Sonnet|Opus|persona role-shift/.test(text)
+    ) {
       errors.push(`${relative} contains a runtime-specific portable-workflow leak`);
     }
+    // The nested-executable check applies to every skill regardless of class.
     if (/^\s*planr-pipeline\s+/m.test(text) || /`planr-pipeline\s+[^`]+`/.test(text)) {
       errors.push(`${relative} invokes the nested planr-pipeline executable`);
     }
   }
 }
 
-for (const expected of expectedPortableSkills) {
-  if (!names.has(expected)) errors.push(`Marketplace is missing portable skill: ${expected}`);
+// Every declared skill (either class) must appear in the marketplace list, and
+// the list may contain nothing beyond the declared union. Dropping a still-shipped
+// skill from marketplace.json therefore surfaces here as an explicit "missing".
+for (const expected of declaredSkills) {
+  if (!names.has(expected)) errors.push(`Marketplace is missing declared skill: ${expected}`);
 }
 for (const name of names) {
-  if (!expectedPortableSkills.has(name)) errors.push(`Unexpected portable skill: ${name}`);
+  if (!declaredSkills.has(name)) errors.push(`Unexpected undeclared skill: ${name}`);
+}
+
+// Installed-bundle contract (FR1/FR2 NFR): what actually ships is the set of real
+// subdirectories under skills/ carrying a SKILL.md — not marketplace.json's stated
+// intent, which is precisely what was wrong (nine declared, ten shipped). Assert the
+// on-disk set is identical to the declared union. A new directory with no class is
+// caught here as "undeclared" (it can never auto-ship), and a manifest regression
+// that drops a still-installed skill is caught above as "missing".
+const skillsDir = join(root, 'skills');
+const realSkillNames = new Set(
+  readdirSync(skillsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(join(skillsDir, entry.name, 'SKILL.md')))
+    .map((entry) => entry.name),
+);
+for (const real of realSkillNames) {
+  if (!declaredSkills.has(real)) {
+    errors.push(`Undeclared skill directory would auto-ship: skills/${real}`);
+  }
+}
+for (const declared of declaredSkills) {
+  if (!realSkillNames.has(declared)) {
+    errors.push(`Declared skill has no directory on disk: skills/${declared}`);
+  }
 }
 
 if (existsSync(operateSkillPath)) {
@@ -239,4 +280,6 @@ if (errors.length) {
   for (const error of errors) process.stderr.write(`FAIL ${error}\n`);
   process.exit(1);
 }
-process.stdout.write(`PASS ${names.size} portable skills validated\n`);
+process.stdout.write(
+  `PASS ${names.size} skills validated (${expectedPortableSkills.size} portable + ${expectedShippedSkills.size} shipped)\n`,
+);
