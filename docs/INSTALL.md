@@ -8,22 +8,42 @@ Three channels, each self-contained. Pick the one that matches your environment.
 
 **Prerequisites:** Claude Code CLI installed and signed in.
 
-### Two-step install
+### Recommended: install the CLI, then `planr setup`
+
+Install the OpenPlanr CLI and let it wire Claude Code for you:
+
+```bash
+curl -fsSL https://openplanr.dev/install.sh | sh
+# Windows: irm https://openplanr.dev/install.ps1 | iex
+
+planr setup
+```
+
+`planr setup` is the front door. It detects the supported coding agents you have
+installed and wires each one from a single source. For Claude Code it registers
+the official ecosystem marketplace and installs the OpenPlanr plugin — the
+unified planner plus focused artifact review, PLAN, Design, SHIP, dashboard,
+sync, and doctor skills — after showing a confirmed preview. Claude Code
+activates the relevant skill from the user's intent. On later runs it updates
+stale Claude plugins the same way; restart Claude Code after an update so the
+runtime reloads the plugin.
+
+The same command wires Codex and Cursor when it finds them. Claude Code, Codex,
+and Cursor are the runtimes supported and certified today.
+
+### Manual alternative: the plugin marketplace
+
+The plugin is one convenience channel for Claude Code, not the only way in. If
+you would rather not install the CLI, run the two commands `planr setup` issues
+for you directly inside Claude Code:
 
 ```bash
 /plugin marketplace add openplanr/marketplace
 /plugin install openplanr@openplanr
 ```
 
-The first command registers the official ecosystem marketplace. The second installs
-the OpenPlanr plugin from that marketplace. It includes the unified planner plus
-focused artifact review, PLAN, Design, SHIP, dashboard, sync, and doctor skills.
-Claude Code activates the relevant skill from the user's intent.
-
-When installed through the OpenPlanr CLI, `planr setup` performs the same
-marketplace registration and updates stale Claude plugins after showing a
-confirmed preview. Restart Claude Code after an update so the runtime reloads
-the plugin.
+The first command registers the official ecosystem marketplace; the second
+installs the OpenPlanr plugin from it, with the same skills listed above.
 
 ### Verify
 

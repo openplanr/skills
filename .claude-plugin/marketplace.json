@@ -5,8 +5,8 @@
     "email": "asem@techarc.io"
   },
   "metadata": {
-    "description": "Agent skills for OpenPlanr — operating decisions, planning, and complete delivery workflows for AI coding agents",
-    "version": "1.25.0"
+    "description": "Agent skills for OpenPlanr \u2014 operating decisions, planning, and complete delivery workflows for AI coding agents",
+    "version": "1.26.0"
   },
   "plugins": [
     {

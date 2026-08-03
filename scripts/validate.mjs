@@ -164,6 +164,82 @@ for (const declared of declaredSkills) {
   }
 }
 
+// FR1 / FR6 (SPEC-007) — every converged workflow skill is a byte-parity mirror
+// of planr-pipeline's canonical Codex adapter output, so a change to a workflow
+// lands once upstream and cannot silently diverge here. The mirror carries
+// exactly two intentional, tolerated differences from that source and nothing
+// else:
+//   1. a `license: MIT` frontmatter line the pipeline copy omits (planr-operate
+//      already carries it on both sides);
+//   2. the runtime-neutral `--runtime <active-runtime>` placeholder in place of
+//      the Codex-specific adapter's `--runtime codex`, because this bundle ships
+//      to every supported runtime, not just Codex (the planr-plan precedent).
+// normalizeSkill collapses those two and only those two; any other differing
+// byte in any mirrored skill is reported and named. This is the one checker for
+// all six workflow skills — a generalization of the former single planr-operate
+// comparison, not a second parallel one — so the convergence FR1 requires cannot
+// decay now that the mirror lives one repository over.
+const normalizeSkill = (text) =>
+  text.replace(/^license: MIT\r?\n/m, '').replace(/--runtime codex\b/g, '--runtime <active-runtime>');
+// normalizeSkill collapses `--runtime codex` to the neutral placeholder on BOTH
+// sides, which is correct for the canonical Codex adapter (it is Codex-specific by
+// construction) but leaves a hole on the mirror side: a literal `--runtime codex`
+// hard-coded into a portable skill would normalize to the same string and pass byte
+// parity silently, telling Claude Code and Cursor users to pass a Codex-only flag.
+// This guard makes that tolerance safe by asserting the mirror side of every
+// converged workflow skill uses the runtime-neutral placeholder, never a literal
+// supported runtime name in a `--runtime` argument. It protects the class, not just
+// the two skills (planr-plan, planr-ship) that carry a `--runtime` token today.
+// planr-operate is exempt: T-002 deliberately excluded it from workflow convergence
+// because it is runtime-differentiated, and it legitimately carries `runtime: codex`
+// in its body (a binding token, not a `--runtime` argument).
+const runtimeNeutralExempt = new Set(['planr-operate']);
+const supportedRuntimeNames = ['claude-code', 'codex', 'cursor'];
+const literalRuntimeArg = new RegExp(
+  String.raw`--runtime\s+(?:${supportedRuntimeNames.join('|')})\b`,
+);
+for (const name of [
+  'planr-plan',
+  'planr-ship',
+  'planr-operate',
+  'planr-design',
+  'planr-sync',
+  'planr-dashboard',
+]) {
+  const mirrorPath = join(root, 'skills', name, 'SKILL.md');
+  const canonicalPath = join(
+    workspace,
+    'planr-pipeline',
+    'adapters',
+    'codex',
+    'skills',
+    name,
+    'SKILL.md',
+  );
+  if (existsSync(mirrorPath)) {
+    const mirrorText = readFileSync(mirrorPath, 'utf8');
+    // Runtime-neutrality guard — mirror side only, independent of the sibling
+    // pipeline being present, so it never goes vacuous. The canonical adapter copy
+    // is Codex-specific and legitimately carries `--runtime codex`; only the
+    // cross-runtime mirror is held to the placeholder.
+    if (!runtimeNeutralExempt.has(name)) {
+      const literal = literalRuntimeArg.exec(mirrorText);
+      if (literal) {
+        errors.push(
+          `Mirrored ${name} skill hard-codes "${literal[0]}"; a cross-runtime skill must use the neutral "--runtime <active-runtime>" placeholder, never a literal runtime name`,
+        );
+      }
+    }
+    if (existsSync(canonicalPath)) {
+      const mirror = normalizeSkill(mirrorText);
+      const canonical = normalizeSkill(readFileSync(canonicalPath, 'utf8'));
+      if (mirror !== canonical) {
+        errors.push(`Mirrored ${name} skill drifts from ${canonicalPath}`);
+      }
+    }
+  }
+}
+
 if (existsSync(operateSkillPath)) {
   const operateSkill = readFileSync(operateSkillPath, 'utf8');
   const commands = operateSkill.match(/`planr[^`]*`/g) ?? [];
@@ -246,18 +322,6 @@ if (existsSync(operateSkillPath)) {
     }
   }
 
-  const canonicalPath = join(
-    workspace,
-    'planr-pipeline',
-    'adapters',
-    'codex',
-    'skills',
-    'planr-operate',
-    'SKILL.md',
-  );
-  if (existsSync(canonicalPath) && readFileSync(canonicalPath, 'utf8') !== operateSkill) {
-    errors.push(`Generated planr-operate skill drifts from ${canonicalPath}`);
-  }
   const questionnairePath = join(
     workspace,
     'planr-pipeline',
@@ -271,6 +335,53 @@ if (existsSync(operateSkillPath)) {
     for (const question of questionnaire.questions ?? []) {
       if (typeof question.label === 'string' && operateSkill.includes(question.label)) {
         errors.push(`planr-operate copies a CLI-owned question label: ${question.label}`);
+      }
+    }
+  }
+}
+
+// FR7 (SPEC-007) — installation docs lead with `planr setup` as the front door,
+// presenting the Claude Code plugin as one convenience channel, not the delivery
+// mechanism. This block is independent of every check above: it reads a doc file,
+// touches no shared state, and only appends to `errors`.
+const installDocPath = join(root, 'docs', 'INSTALL.md');
+if (existsSync(installDocPath)) {
+  const installDoc = readFileSync(installDocPath, 'utf8');
+  const heading = '## Claude Code';
+  const sectionStart = installDoc.indexOf(heading);
+  if (sectionStart === -1) {
+    errors.push('docs/INSTALL.md is missing the "## Claude Code" section');
+  } else {
+    // Isolate the "## Claude Code" section: from its heading up to the next
+    // level-2 heading. `\n## ` never matches a `### ` subheading, so Prerequisites,
+    // Verify, and Local development stay inside the slice we assert over.
+    const afterHeading = sectionStart + heading.length;
+    const nextSectionOffset = installDoc.slice(afterHeading).indexOf('\n## ');
+    const section =
+      nextSectionOffset === -1
+        ? installDoc.slice(sectionStart)
+        : installDoc.slice(sectionStart, afterHeading + nextSectionOffset);
+    const setupIndex = section.indexOf('planr setup');
+    const marketplaceIndex = section.indexOf('/plugin marketplace add');
+    if (setupIndex === -1) {
+      errors.push('docs/INSTALL.md "## Claude Code" section never mentions `planr setup`');
+    }
+    if (marketplaceIndex === -1) {
+      errors.push('docs/INSTALL.md "## Claude Code" section no longer shows the `/plugin marketplace add` path');
+    }
+    // The front-door ordering assertion: setup must appear before the raw plugin two-step.
+    if (setupIndex !== -1 && marketplaceIndex !== -1 && setupIndex >= marketplaceIndex) {
+      errors.push(
+        'docs/INSTALL.md "## Claude Code" section leads with the raw `/plugin marketplace add` two-step; `planr setup` must come first (FR7)',
+      );
+    }
+    // The plugin path must stay discoverable: both raw commands remain verbatim.
+    for (const command of [
+      '/plugin marketplace add openplanr/marketplace',
+      '/plugin install openplanr@openplanr',
+    ]) {
+      if (!section.includes(command)) {
+        errors.push(`docs/INSTALL.md "## Claude Code" section dropped the plugin command: ${command}`);
       }
     }
   }

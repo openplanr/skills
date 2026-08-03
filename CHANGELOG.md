@@ -2,6 +2,32 @@
 
 All notable changes to `openplanr-skills` are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.26.0] — 2026-08-04
+
+### Changed
+
+- The `planr-sync`, `planr-ship`, `planr-design`, and `planr-dashboard` skills no
+  longer carry their own copy of the workflow procedure. Each now names the one
+  procedure file its pipeline counterpart reads, generalizing the delegation
+  `planr-plan` already used. The procedure text existed twice — once here and once
+  in the pipeline — so every change had to land in both places, and the second
+  landing is the one that gets forgotten.
+- `scripts/validate.mjs` — the byte-parity check that previously covered a single
+  skill now loops over all six workflow skills, comparing each against its
+  canonical pipeline counterpart. Two differences are tolerated and only two: the
+  `license: MIT` frontmatter line, and the runtime-neutral `--runtime
+  <active-runtime>` placeholder that replaces the pipeline copy's Codex-specific
+  `--runtime codex`. Any other differing byte fails and names the skill.
+- A new guard asserts the mirrored skills never hard-code a literal runtime name
+  in a `--runtime` argument. The parity tolerance above is applied to both sides,
+  so a literal that leaked into this bundle would otherwise normalize away and
+  pass — while shipping a Codex-only instruction to Claude Code and Cursor users.
+  The check reads each skill unconditionally, so it still fires when no pipeline
+  checkout is present. `planr-operate` is exempt: it is deliberately
+  runtime-differentiated.
+- Pinned to `planr-pipeline@0.40.0` across `package.json`, both CI workflow refs,
+  and the implementation note.
+
 ## [1.25.0] — 2026-08-03
 
 ### Added
