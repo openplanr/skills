@@ -1,9 +1,9 @@
 {
   "name": "@openplanr/skills",
-  "version": "1.26.0",
+  "version": "1.26.1",
   "private": true,
   "type": "module",
-  "pipelineCompatibility": "planr-pipeline@0.40.0",
+  "pipelineCompatibility": "planr-pipeline@0.41.0",
   "engines": {
     "node": ">=20"
   },
