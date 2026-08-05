@@ -2,6 +2,15 @@
 
 All notable changes to `openplanr-skills` are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.26.2] — 2026-08-05
+
+### Changed
+
+- Pinned to `planr-pipeline@0.42.0` across `package.json`, both CI workflow refs,
+  and the implementation note. No skill content changed; every mirror stays
+  byte-identical to its pipeline counterpart. The exact-version pin makes each
+  pipeline release a mandatory advance here.
+
 ## [1.26.1] — 2026-08-04
 
 ### Changed
