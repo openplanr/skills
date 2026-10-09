@@ -1,15 +1,24 @@
 ---
 name: planr-design
-description: Run OpenPlanr design, design-loop, or design-review using portable board assets.
+description: This skill has moved. The current OpenPlanr skills for Claude Code, Codex and Cursor ship with the openplanr npm package. Use when the user asks for OpenPlanr or for this skill, to tell them how to install the current version.
 license: MIT
 ---
 
-# Planr Design
+# This skill has moved
 
-1. Invoke `planr pipeline design-engine` with the user's design subcommand and arguments, using
-   repository-relative artifact paths.
-2. Follow the portable procedure in `commands/design.md` from the installed pipeline package —
-   the same one procedure the Claude Code command reads, so this workflow has one implementation.
-   Review returned annotations before applying changes, preserve existing visual behavior, keep
-   review and sharing explicit (never auto-publish or auto-chain), and never launch a
-   non-loopback server.
+This copy of `planr-design` is archived and out of date. Don't follow older instructions from it.
+
+The current OpenPlanr skills for Claude Code, Codex and Cursor are built in
+[openplanr/OpenPlanr](https://github.com/openplanr/OpenPlanr) and ship with the
+[`openplanr`](https://www.npmjs.com/package/openplanr) npm package.
+
+Tell the user to install the current version:
+
+```bash
+npm install -g openplanr
+openplanr setup
+```
+
+`openplanr setup` detects the coding agents on the machine, shows what it will write, and
+installs the skills. Setup steps for each agent are at
+[openplanr.dev/docs](https://openplanr.dev/docs).

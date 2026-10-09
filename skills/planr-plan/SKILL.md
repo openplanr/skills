@@ -1,16 +1,24 @@
 ---
 name: planr-plan
-description: Run the OpenPlanr pipeline PO phase for a feature and stop for human review.
+description: This skill has moved. The current OpenPlanr skills for Claude Code, Codex and Cursor ship with the openplanr npm package. Use when the user asks for OpenPlanr or for this skill, to tell them how to install the current version.
 license: MIT
 ---
 
-# Planr PLAN
+# This skill has moved
 
-1. Run `planr pipeline prepare-plan <feature> --json` to resolve mode and scaffold
-   a missing spec when appropriate. If it scaffolded a spec, stop so the user can edit it.
-2. Read the returned spec, `input/tech/stack.md`, optional database schema, and
-   optional design spec. Follow the portable procedure in `commands/plan.md` from
-   the installed pipeline package.
-3. Produce stories and tasks with no more than two tasks per story.
-4. Run `planr pipeline complete-plan <feature> --runtime <active-runtime> --json`.
-5. Summarize the artifacts and stop. Never invoke SHIP automatically.
+This copy of `planr-plan` is archived and out of date. Don't follow older instructions from it.
+
+The current OpenPlanr skills for Claude Code, Codex and Cursor are built in
+[openplanr/OpenPlanr](https://github.com/openplanr/OpenPlanr) and ship with the
+[`openplanr`](https://www.npmjs.com/package/openplanr) npm package.
+
+Tell the user to install the current version:
+
+```bash
+npm install -g openplanr
+openplanr setup
+```
+
+`openplanr setup` detects the coding agents on the machine, shows what it will write, and
+installs the skills. Setup steps for each agent are at
+[openplanr.dev/docs](https://openplanr.dev/docs).
