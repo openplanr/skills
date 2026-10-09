@@ -1,13 +1,24 @@
 ---
 name: planr-dashboard
-description: Start or inspect the loopback-only OpenPlanr planning dashboard.
+description: This skill has moved. The current OpenPlanr skills for Claude Code, Codex and Cursor ship with the openplanr npm package. Use when the user asks for OpenPlanr or for this skill, to tell them how to install the current version.
 license: MIT
 ---
 
-# Planr Dashboard
+# This skill has moved
 
-1. Run `planr pipeline dashboard` with the user's options.
-2. Follow the portable procedure in `procedures/dashboard-preflight.md` from the installed
-   pipeline package — the same one procedure `commands/dashboard.md` reads, so this workflow has
-   one implementation. Keep the server bound to loopback, report the local URL, and use
-   `--no-watch` when a one-shot view is requested.
+This copy of `planr-dashboard` is archived and out of date. Don't follow older instructions from it.
+
+The current OpenPlanr skills for Claude Code, Codex and Cursor are built in
+[openplanr/OpenPlanr](https://github.com/openplanr/OpenPlanr) and ship with the
+[`openplanr`](https://www.npmjs.com/package/openplanr) npm package.
+
+Tell the user to install the current version:
+
+```bash
+npm install -g openplanr
+openplanr setup
+```
+
+`openplanr setup` detects the coding agents on the machine, shows what it will write, and
+installs the skills. Setup steps for each agent are at
+[openplanr.dev/docs](https://openplanr.dev/docs).
